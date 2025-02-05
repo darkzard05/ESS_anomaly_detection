@@ -1,4 +1,5 @@
 import os
+import random
 import pandas as pd
 import numpy as np
 import torch
@@ -18,7 +19,23 @@ from training.test import testing
 from training.utils import create_models
 
 
-def main(path, batch_size, num_epochs, split, length):
+def set_seed(seed):
+    """재현성을 위해 모든 난수 생성기의 seed를 설정하는 함수."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    # 추가적으로, cudnn의 비결정성 사용을 방지하려면 아래 옵션을 설정할 수 있습니다.
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+
+def main(path, batch_size, num_epochs, split, length, seed):
+    # seed 설정
+    set_seed(seed)
+    
     # 경로 리스트와 결과 리스트 정의
     paths = [path + '/2024/Month_07/', path + '/2024/Month_08/', path + '/2024/Month_09/',
             path + '/2024/Month_10/', path + '/2024/Month_11/', path + '/2024/Month_12/']
@@ -136,10 +153,11 @@ def main(path, batch_size, num_epochs, split, length):
 if __name__ == '__main__':
     batch_size = 64
     num_epochs = 1
+    seed = 777
     
     split = 64  # 분할할 조각의 개수
     length = 4096  # 원본 데이터의 전체 길이
 
     path = './data/raw/gimhae_ESS'
     save_path = '1224_ESS_anomaly_detection_resnet18_csa_SMOTE'
-    main(path, batch_size, num_epochs, split, length)
+    main(path, batch_size, num_epochs, split, length, seed)
